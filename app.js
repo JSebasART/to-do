@@ -3,15 +3,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('input');
     const list = document.getElementById('list');
 
+    //load the tasks in local storage
+    loadTasks();
+
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         addTask(input.value);
-        todoInput.value = '';
+        input.value = '';
     });
 
-    function addTask(text) {
+    function addTask(text,completed) {
         const item = document.createElement('li');
         item.textContent = text;
+
+        if (completed) {
+            item.classList.add('completed');
+        }
 
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('button-container'); 
@@ -21,13 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteButton.classList.add('delete');
         deleteButton.addEventListener('click', () => {
             list.removeChild(item);
+            saveTask();
         });
 
         const completeButton = document.createElement('button')
         completeButton.textContent = 'Complete task';
         completeButton.classList.add('complete');
         completeButton.addEventListener('click', () => {
-            item.classList.toggle('completed')
+            item.classList.toggle('completed');
+            saveTask();
         });
 
         buttonContainer.appendChild(completeButton);
@@ -35,5 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         item.appendChild(buttonContainer)
         list.appendChild(item);
+        saveTask();
+    }
+
+    function saveTask() {
+        const tasks = [];
+        list.querySelectorAll('li').forEach((item) => {
+            tasks.push({
+                text: item.firstChild.textContent, // Get the text content of the task
+                completed: item.classList.contains('completed') // Check if the task is completed
+            });
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks)); // Store tasks as a JSON string
+    }
+
+    function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || []; // Retrieve tasks from localStorage
+        tasks.forEach(task => addTask(task.text, task.completed));
     }
 });
